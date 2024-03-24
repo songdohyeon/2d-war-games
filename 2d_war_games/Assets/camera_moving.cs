@@ -3,70 +3,31 @@ using System.Collections.Generic;
 // using System.Numerics;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
+using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 
 public class camera_moving : MonoBehaviour
 {
     [SerializeField] private float speed = 1.0f;
-    [SerializeField] private float stopSpeed = 0.01f;
-
-    private bool moveMouse;
-    private Vector3 StartPosition;
-    private Vector3 directionForce;
-    private Camera _camera;
     void Start()
     {
-        _camera = GetComponent<Camera>();
+        
     }
 
     void Update()
     {
-        MoveCamera();
-        StopCamera();
-        UpdateCamera();
+        Move();
     }
 
-    private void MoveCamera(){
-        var m = _camera.ScreenToWorldPoint(Input.mousePosition);
-        if(Input.GetMouseButtonDown(0)){
-            CameraPositionStart(m);
-        } else if(Input.GetMouseButton(0)){
-            CameraPositionProgress(m);
-        } else {
-            CameraPositionEnd();
+    private void Move(){
+        if(Input.GetMouseButton(0)){
+            Vector3 m_pos = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"), 0).normalized;
+            Vector3 m_pos1 = m_pos * (speed * Time.deltaTime);
+            if(m_pos1.magnitude > 1f){
+                m_pos1 = m_pos1.normalized;
+                Debug.Log(m_pos1);
+            }
+            this.transform.Translate(-m_pos1);
         }
-    }
-    private void StopCamera(){
-        if(moveMouse){
-            return ;
-        }
-        directionForce *= speed;
-        if(directionForce.magnitude < stopSpeed){
-            directionForce = Vector3.zero;
-        }
-    }
-    private void UpdateCamera(){
-        if(directionForce == Vector3.zero){
-            return ;
-        }
-
-        var currenPosition = transform.position;
-        var targetPosition = currenPosition + directionForce;
-        transform.position = Vector3.Lerp(currenPosition, targetPosition, 0.5f);
-    }
-
-    private void CameraPositionStart(Vector3 sm){
-        moveMouse = true;
-        StartPosition = sm;
-        directionForce = Vector2.zero;
-    }
-    private void CameraPositionProgress(Vector3 tm){
-        if(!moveMouse){
-            CameraPositionStart(tm);
-        }
-        directionForce = StartPosition - tm;
-    }
-    private void CameraPositionEnd(){
-        moveMouse = false;
     }
 }
